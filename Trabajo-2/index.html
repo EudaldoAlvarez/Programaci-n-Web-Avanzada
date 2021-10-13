@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title></title>
+	<style type="text/css">
+		canvas{
+			border-style: solid;
+			border-width: 1px;
+			border-color: black;
+		}
+	</style>
+</head>
+<body>
+	<center>
+		<canvas id="myCanvas" width="500" height="600">
+			
+		</canvas>
+	</center>
+	<img id="image" src="assets/diploma.png" style="display: none">
+<script type="text/javascript">
+	var canvas = null;
+	var ctx =null;
+
+	function run(){
+		canvas =document.getElementById("myCanvas");
+		ctx = canvas.getContext('2d');
+		paint(ctx);
+	}
+
+	function paint(ctx){
+
+	ctx.fillRect(10,10,50,50);
+
+	ctx.fillStyle = "rgb(200,0,0)"
+	ctx.fillRect(50,50,50,50);
+
+	ctx.fillStyle = "rgba(0,200,0,.5)"
+	ctx.fillRect(90,90,50,50);
+
+	ctx.moveTo(250,250)
+	ctx.lineTo(350,350)
+	ctx.stroke();
+
+	ctx.moveTo(400,400)
+	ctx.lineTo(320,390)
+	ctx.lineTo(290,310)
+	ctx.fill()
+
+	ctx.beginPath();
+	ctx.arc(350,70,40,0,2 * Math.PI);
+	ctx.strokeStyle = "rgba(0,200,0,.5)";
+	ctx.stroke();
+	ctx.closePath();
+
+	ctx.beginPath();
+	ctx.arc(450,70,40,0,2 * Math.PI);
+	ctx.fill();
+	ctx.closePath();
+
+	ctx.font = "30px Sains Serif";
+	ctx.fillText("Hola mundo",70,350);
+
+	ctx.font = "30px Arial";
+	ctx.strokeText("Hola mundo",70,400);
+
+	var grd = ctx.createLinearGradient(0,100,200,0)
+	grd.addColorStop(0,"red")
+	grd.addColorStop(1,"blue")
+
+	ctx.fillStyle = grd
+	ctx.fillRect(170,180,150,60)
+
+
+	// Create gradient
+	var grd = ctx.createRadialGradient(75, 50, 5, 90, 60, 100);
+	grd.addColorStop(0, "red");
+	grd.addColorStop(1, "blue");
+
+	// Fill with gradient
+	ctx.fillStyle = grd;
+	ctx.fillRect(10, 10, 150, 80);
+
+	var img =document.getElementById('image')
+	ctx.drawImage(img,400,400)
+	}
+
+	
+	window.addEventListener('load',run(),false);
+</script>
+</body>
+</html>
