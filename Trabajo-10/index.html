@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title></title>
+	<style type="text/css">
+		canvas{
+			border-style: solid;
+			border-width: 1px;
+			border-color: black;
+		}
+	</style>
+</head>
+<body>
+	<center>
+		<canvas id="myCanvas" width="500" height="600">
+			
+		</canvas>
+	</center>
+	<img id="image" src="assets/diploma.png" style="display: none">
+<script type="text/javascript">
+	var canvas = null;
+	var ctx =null;
+	var color = "rgba(200,0,0,.5)";
+	var figura = 1;
+	var isPressed = false;
+
+	var globalX = 250
+	var globalY = 300;
+	speed = 5;
+
+	function run(){
+		canvas =document.getElementById("myCanvas");
+		ctx = canvas.getContext('2d');
+		paint(ctx);
+		canvas.addEventListener('click',function(evt){
+			// console.log(evt)
+				ctx.fillStyle = color
+			if (figura == 1) {
+				ctx.beginPath();
+				ctx.arc(evt.layerX,evt.layerY,40,0,2 * Math.PI);
+				ctx.fill();
+				ctx.stroke();
+				ctx.closePath();
+			}else{
+				ctx.fillRect(evt.layerX-25,evt.layerY-25,50,50);
+				ctx.strokeRect(evt.layerX-25,evt.layerY-25,50,50)
+			}
+
+		},false);
+
+		canvas.addEventListener('mouseover',function(evt){
+			color = getRandomColor();
+		},false);
+
+		canvas.addEventListener('mouseout',function(evt){
+			figura = (figura==1)?2:1;
+		},false);
+
+		canvas.addEventListener('mousemove',function(evt){
+			if(isPressed){
+				ctx.fillStyle= "black";
+				ctx.fillRect(evt.layerX-1.5,evt.layerY-1.5,3,3);
+			}
+		},false);
+
+		canvas.addEventListener('mouseup',function(evt){
+			isPressed = false;
+		},false);
+
+		canvas.addEventListener('mousedown',function(evt){
+			isPressed = true;
+		},false);
+	}
+
+	function paint(ctx){
+		ctx.fillStyle = "white"
+		ctx.fillRect(0,0,500,600);
+		
+		ctx.fillStyle = "rgba(0,200,0,.5)"
+		ctx.fillRect(globalX,globalY,50,50);
+
+
+	
+	}
+
+	function getRandomColor() {
+	  var trans = '0.5'; // 50% transparency
+	  var color = 'rgba(';
+	  for (var i = 0; i < 3; i++) {
+	    color += Math.floor(Math.random() * 255) + ',';
+	  }
+	  color += trans + ')'; // add the transparency
+	  return color;
+	}
+
+	document.addEventListener('keydown',function(evt){
+		if(evt.keyCode ==39 || evt.keyCode == 68 ){
+			globalX += speed;
+		}
+		if(evt.keyCode ==65 || evt.keyCode == 37 ){
+			globalX -= speed;
+		}
+		if(evt.keyCode ==38 || evt.keyCode == 87 ){
+			globalY -= speed;
+		}
+		if(evt.keyCode ==40 || evt.keyCode == 83 ){
+			globalY +=speed;
+		}
+
+		if(evt.keyCode ==32){
+			speed +=3;
+		}
+		paint(ctx);
+	},false);
+
+
+	window.addEventListener('load',run(),false);
+</script>
+</body>
+</html>
