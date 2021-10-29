@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title></title>
+	<style type="text/css">
+		canvas{
+			border-style: solid;
+			border-width: 1px;
+			border-color: black;
+		}
+		div{
+			display: list-item;
+			width: 100;
+		}
+		b{
+			font-size: 20px;
+		}
+		span{
+			padding: 1em;
+		}
+	</style>
+</head>
+<body style="background-image: url(assets/bg.jpg);">
+	<div>
+			<b>Direcciónes</b>
+			<span>W = Arriba </span>
+			<span>A = Izquierda </span>
+			<span>S = Abajo  </span>
+			<span>D = Derecha</span>
+			<span>Espacio = Pausa</span>
+			 
+			 
+			
+			
+			
+
+		<span id="tiempo" style="padding-left: 18em;">Tiempo: 0:00 </span>
+
+	</div>
+	<center>
+			<canvas id="myCanvas" width="960" height="510">
+			
+			</canvas>
+	</center>
+<script src="mapa.js"></script>
+
+<script type="text/javascript">
+	var canvas = null;
+	var ctx =null;
+	var color = "rgba(200,0,0,.5)";
+
+	var globalX = 250
+	var globalY = 250;
+	var speed = 3;
+	var dir = 'derecha';
+	var lastPress = 68;
+	var wallX = 0;
+	var wallY = 0;
+	var player = null;
+	var target = null;
+	var walls = new Array();
+
+	var segundos = 0;
+	var minutos = 0;
+	var horas = 0;
+
+	var iPlayer = new Image();
+	var iTarget = new Image();
+	var iWall = new Image();
+
+	var sound = new Audio();
+
+	var nivel = 2;
+	var pause = true;
+	var win = false;
+/** 
+ * ====================================================================
+ * */
+	function run(){ //esta función inicializan las variables y objetos
+		canvas =document.getElementById("myCanvas");
+		ctx = canvas.getContext('2d');
+		
+		player = new Cuadrado(0,24,20,20,'rgba(0,0,0,0)');
+		iPlayer.src = 'assets/raton.png';
+		
+		iTarget.src = 'assets/queso.png';
+		iWall.src = 'assets/pared-de-ladrillo.png'
+
+		sound.src = 'assets/win.mp3'; 
+
+		crearMapa();
+	
+		update();
+	}
+/** 
+ * ====================================================================
+ * */
+	function update(){
+		window.requestAnimationFrame(update)
+		if (!pause) {
+			if(lastPress ==39 || lastPress == 68 ){
+				dir = 'derecha'
+				iPlayer.src = "assets/raton.png"
+			}
+			if(lastPress ==65 || lastPress == 37 ){
+				dir = 'izquierda'
+				iPlayer.src = "assets/raton_izquierda.png"
+			}
+			if(lastPress ==38 || lastPress == 87 ){
+				dir = 'arriba'
+				iPlayer.src = "assets/raton_arriba.png"
+			}
+			if(lastPress ==40 || lastPress == 83 ){
+				dir = 'abajo'
+				iPlayer.src = "assets/raton_abajo.png"
+			}
+
+
+			if(dir == 'derecha') player.x += speed;
+			if(dir == 'izquierda') player.x -= speed;
+			if(dir == 'arriba') player.y -= speed;
+			if(dir == 'abajo') player.y +=speed;
+
+			if(player.x > 940) player.x = 940
+			if(player.x < 0) player.x = 0
+
+			if(player.y > 500) player.y = 0
+			if(player.y < 0) player.y = 500
+
+			//si el jugador llega a la meta se cambia de nivel y se reproduce el sonido de victoria
+			if (player.touch(target)) {
+				nivel +=1;
+				wallX = 0;
+				wallY = 0;
+				player.x = 0;
+				player.y = 24;
+				crearMapa();
+				sound.play();
+				pause = true;
+			}
+			//algoritmo para evitar atravesar paredes
+			for (var i = walls.length - 1; i >= 0; i--) {
+					if (player.touch(walls[i])) {
+					if(dir == 'derecha') player.x -= speed;
+					if(dir == 'izquierda') player.x += speed;
+					if(dir == 'arriba') player.y += speed;
+					if(dir == 'abajo') player.y -=speed;
+				}
+			}
+			
+		}
+		paint(ctx)
+		
+	}
+/** 
+ * ====================================================================
+ * */
+	function paint(ctx){//Esta función pinta en pantalla
+		//fondo
+		ctx.fillStyle = "rgba(252, 223, 39,.8)"
+		ctx.fillRect(0,0,960,510);
+
+		//cuadrito
+		player.fill(ctx)
+		ctx.drawImage(iPlayer,player.x,player.y)
+		// target.fill(ctx)
+		ctx.drawImage(iTarget,target.x,target.y)
+
+		//pintado de muros
+		for (var i = walls.length - 1; i >= 0; i--) {
+			walls[i].fill(ctx);
+			ctx.drawImage(iWall,walls[i].x,walls[i].y);
+		}
+
+		//pintado de tiempo y nivel
+		ctx.fillStyle = "black"
+		ctx.font = "20px Arial"
+		ctx.fillText("Nivel: "+(nivel+1),10,500)
+		if(pause){
+			ctx.fillText("PAUSE",420,260);
+		}
+	}
+/** 
+ * ====================================================================
+ * */
+		iniciarTemporizador();
+	/** 
+ * ====================================================================
+ * */
+	document.addEventListener('keydown',function(evt){
+
+		lastPress = evt.keyCode;
+
+		if(evt.keyCode ==32){
+			pause = (pause)?false:true;
+		}
+
+	},false);
+/** 
+ * ====================================================================
+ * */
+	window.requestAnimationFrame = (function () {
+	    return window.requestAnimationFrame ||
+	        window.mozRequestAnimationFrame ||
+	        window.webkitRequestAnimationFrame ||
+	        function (callback) {
+	            window.setTimeout(callback, 1000);
+	        };
+	}());
+/** 
+ * ====================================================================
+ * */
+	function Cuadrado(x,y,w,h,c){
+			//atributos
+			this.x = x;
+			this.y = y;
+			this.w = w;
+			this.h = h;
+			this.c = c;
+
+			//método
+			this.fill = function(ctx){
+
+				ctx.fillStyle = this.c;
+				ctx.fillRect(this.x,this.y,this.w,this.h);
+			}
+			this.touch = function(cuadro){
+
+				if (this.x <cuadro.x + cuadro.w &&
+				 this.y < cuadro.y + cuadro.h &&
+				  this.x + this.w > cuadro.x &&
+				   this.y+ this.h > cuadro.y) {
+					return true;
+				}
+				return false;
+			}
+		}
+/** 
+ * ====================================================================
+ * */		
+	function iniciarTemporizador() { //funcion para contar el tiempo transcurrido en el juego
+	    var id = setInterval(function () {
+	    	if (!pause) {
+	        segundos++;
+	        if (segundos == 60) { minutos++, segundos = 0 };
+	        if (minutos == 60) { horas++, minutos = 0 };
+	        if (segundos < 10 && segundos != 0) { segundos = '0' + segundos; }
+	        if (win) { clearInterval(id) }
+
+	        ctx.fillText(`Tiempo:${minutos}:${segundos}`,100,500);
+	        let htmlTiempo = document.getElementById("tiempo");
+	        htmlTiempo.innerHTML = `Tiempo:${minutos}:${segundos}`;
+
+	    	}
+
+
+	    }, 1000);
+
+	};
+/** 
+ * ====================================================================
+ * */
+	function crearMapa(){ //Funcion para instanciar el arreglo de objetos, con base en el arreglo de mapas
+		walls = [];
+		for (var i = 0; i <= 19; i++) {
+			for (var c = 0; c <=39; c++) {
+				if(mapa[nivel][i].charAt(c) == '*'){
+					walls.push(new Cuadrado(wallX,wallY,24,24,'gray'));
+				}
+				if(mapa[nivel][i].charAt(c) == 'm'){
+					target = new Cuadrado(wallX,wallY,20,20,'green');
+				}
+				
+				wallX = wallX+24;
+			}
+			wallX=0;
+			wallY = wallY+24;	
+		}
+		
+	}	
+/** 
+ * ====================================================================
+ * */
+	window.addEventListener('load',run(),false);
+</script>
+</body>
+</html>
